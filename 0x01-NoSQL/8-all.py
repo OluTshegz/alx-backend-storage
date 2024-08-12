@@ -14,11 +14,11 @@ The function returns an empty list if
 there are no documents in the collection.
 """
 
-from pymongo.collection import Collection
-from typing import List, Dict
+# from pymongo.collection import Collection
+# from typing import List, Dict
 
 
-def list_all(mongo_collection: Collection) -> List[Dict]:
+def list_all(mongo_collection):
     """
     List all documents in the given MongoDB collection.
 
@@ -40,4 +40,5 @@ def list_all(mongo_collection: Collection) -> List[Dict]:
     documents = mongo_collection.find()
 
     # Convert the cursor to a list and return it
-    return list(documents)
+    # return list(documents)
+    return [document for document in documents]
