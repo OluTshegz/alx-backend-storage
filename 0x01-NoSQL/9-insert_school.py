@@ -12,6 +12,7 @@ Prototype: def insert_school(mongo_collection, **kwargs):
 # from typing import Any
 
 
+# def insert_school(mongo_collection: Collection, **kwargs: Any) -> str:
 def insert_school(mongo_collection, **kwargs):
     """
     Inserts a new document into the given MongoDB
@@ -31,4 +32,5 @@ def insert_school(mongo_collection, **kwargs):
     result = mongo_collection.insert_one(kwargs)
 
     # Return the _id of the newly inserted document
-    return str(result.inserted_id)
+    # return str(result.inserted_id)
+    return result.inserted_id

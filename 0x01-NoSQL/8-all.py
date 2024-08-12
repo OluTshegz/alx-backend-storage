@@ -18,6 +18,7 @@ there are no documents in the collection.
 # from typing import List, Dict
 
 
+# def list_all(mongo_collection: Collection) -> List[Dict]:
 def list_all(mongo_collection):
     """
     List all documents in the given MongoDB collection.
