@@ -18,7 +18,7 @@ path=/status
 You can use this dump as data sample: dump.zip
 """
 
-import pymongo
+# import pymongo
 from pymongo import MongoClient
 
 
