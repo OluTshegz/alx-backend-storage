@@ -16,6 +16,91 @@ import uuid
 T = TypeVar('T', str, bytes, int, float, None)
 UnionOfTypes = Union[str, bytes, int, float, None]
 
+# @staticmethod
+def count_calls(method: Callable) -> Callable:
+    """
+    Decorator to count the number
+    of times a method is called.
+
+    Args:
+        method (Callable): The method to be decorated.
+
+    Returns:
+        Callable: The wrapped method with
+        counting functionality.
+    """
+    # Use wraps to preserve the original method's
+    # attributes (name, docstring, etc.)
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        Wrapper function that increments the count of method
+        calls and returns the original method's result.
+
+        Args:
+            self: The instance of the class.
+            *args: Positional arguments passed to the method.
+            **kwargs: Keyword arguments passed to the method.
+
+        Returns:
+            The return value of the original method.
+        """
+        # Generate the key for counting based
+        # on the method's qualified name
+        key = method.__qualname__
+        # Increment the count for this method in Redis
+        self._redis.incr(key)
+        # Call the original method and store the result
+        result = method(self, *args, **kwargs)
+        # Return the original method's result
+        return result
+
+    return wrapper
+
+# @staticmethod
+def call_history(method: Callable) -> Callable:
+    """
+    Decorator to store the history of inputs and outputs
+    for a particular function/method in Redis.
+
+    Args:
+        method (Callable): The function to be decorated.
+
+    Returns:
+        Callable: The wrapped function (decorated method)
+        with input and output history tracking.
+    """
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Wrapper function that stores
+        inputs and outputs in Redis.
+
+        Args:
+            self: The instance of the Cache class.
+            *args: Positional arguments passed to the method.
+            **kwargs: Keyword arguments passed to the method.
+
+        Returns:
+            The return value of the method.
+        """
+        # Define base keys for inputs and outputs
+        # using the method's qualified name
+        key_inputs = f"{method.__qualname__}:inputs"
+        key_outputs = f"{method.__qualname__}:outputs"
+        # Store the input arguments as a
+        # string in the Redis list for inputs
+        self._redis.rpush(key_inputs, str(args))
+        # Call the original method and store the output
+        output = method(self, *args, **kwargs)
+        # Store the output in the Redis list for outputs
+        self._redis.rpush(key_outputs, str(output))
+        # Return the output
+        return output
+
+    return wrapper
+
+
 
 class Cache:
     """
@@ -35,90 +120,6 @@ class Cache:
         # Flush the Redis database to remove any
         # existing data thereby ensuring a clean slate
         self._redis.flushdb()
-
-    @staticmethod
-    def count_calls(method: Callable) -> Callable:
-        """
-        Decorator to count the number
-        of times a method is called.
-
-        Args:
-            method (Callable): The method to be decorated.
-
-        Returns:
-            Callable: The wrapped method with
-            counting functionality.
-        """
-        # Use wraps to preserve the original method's
-        # attributes (name, docstring, etc.)
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            """
-            Wrapper function that increments the count of method
-            calls and returns the original method's result.
-
-            Args:
-                self: The instance of the class.
-                *args: Positional arguments passed to the method.
-                **kwargs: Keyword arguments passed to the method.
-
-            Returns:
-                The return value of the original method.
-            """
-            # Generate the key for counting based
-            # on the method's qualified name
-            key = method.__qualname__
-            # Increment the count for this method in Redis
-            self._redis.incr(key)
-            # Call the original method and store the result
-            result = method(self, *args, **kwargs)
-            # Return the original method's result
-            return result
-
-        return wrapper
-
-    @staticmethod
-    def call_history(method: Callable) -> Callable:
-        """
-        Decorator to store the history of inputs and outputs
-        for a particular function/method in Redis.
-
-        Args:
-            method (Callable): The function to be decorated.
-
-        Returns:
-            Callable: The wrapped function (decorated method)
-            with input and output history tracking.
-        """
-
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            """Wrapper function that stores
-            inputs and outputs in Redis.
-
-            Args:
-                self: The instance of the Cache class.
-                *args: Positional arguments passed to the method.
-                **kwargs: Keyword arguments passed to the method.
-
-            Returns:
-                The return value of the method.
-            """
-            # Define base keys for inputs and outputs
-            # using the method's qualified name
-            key_inputs = f"{method.__qualname__}:inputs"
-            key_outputs = f"{method.__qualname__}:outputs"
-            # Store the input arguments as a
-            # string in the Redis list for inputs
-            self._redis.rpush(key_inputs, str(args))
-            # Call the original method and store the output
-            output = method(self, *args, **kwargs)
-            # Store the output in the Redis list for outputs
-            self._redis.rpush(key_outputs, str(output))
-            # Return the output
-            return output
-
-        return wrapper
 
     @count_calls
     @call_history
