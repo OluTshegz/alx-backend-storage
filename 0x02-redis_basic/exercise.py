@@ -16,6 +16,7 @@ import uuid
 T = TypeVar('T', str, bytes, int, float, None)
 UnionOfTypes = Union[str, bytes, int, float, None]
 
+
 # @staticmethod
 def count_calls(method: Callable) -> Callable:
     """
@@ -56,6 +57,7 @@ def count_calls(method: Callable) -> Callable:
         return result
 
     return wrapper
+
 
 # @staticmethod
 def call_history(method: Callable) -> Callable:
@@ -99,7 +101,6 @@ def call_history(method: Callable) -> Callable:
         return output
 
     return wrapper
-
 
 
 class Cache:
