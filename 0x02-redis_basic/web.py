@@ -1,149 +1,54 @@
 #!/usr/bin/env python3
-"""
-This module provides a function to fetch HTML
-content from a URL and cache it using Redis.
-The caching mechanism includes tracking the number of times a URL
-is accessed and setting an expiration time for the cached content.
-"""
+"""In this tasks, we will implement a get_page function
+(prototype: def get_page(url: str) -> str:). The core of
+the function is very simple. It uses the requests module
+to obtain the HTML content of a particular URL and returns it.
 
-from functools import wraps
+Start in a new file named web.py and do not reuse the code
+written in exercise.py.
+
+Inside get_page track how many times a particular URL was
+accessed in the key "count:{url}" and cache the result with
+an expiration time of 10 seconds.
+
+Tip: Use http://slowwly.robertomurray.co.uk to simulate
+a slow response and test your caching."""
+
+
 import redis
 import requests
-from typing import Callable
+from functools import wraps
 
-# Initialize Redis client connection
 r = redis.Redis()
 
 
-def count_calls(method: Callable) -> Callable:
-    """
-    A decorator to count how many
-    times a method is called.
-
-    Args:
-        method (Callable): The method to be decorated.
-
-    Returns:
-        Callable: The wrapped method
-        that increments the call count.
-    """
+def url_access_count(method):
+    """decorator for get_page function"""
     @wraps(method)
-    def wrapper(*args, **kwargs):
-        # Increment the count in Redis
-        # using the method's qualified name
-        r.incr(f"count:{method.__qualname__}")
-        # Execute the original method
-        # and return its output
-        return method(*args, **kwargs)
+    def wrapper(url):
+        """wrapper function"""
+        key = "cached:" + url
+        cached_value = r.get(key)
+        if cached_value:
+            return cached_value.decode("utf-8")
 
+            # Get new content and update cache
+        key_count = "count:" + url
+        html_content = method(url)
+
+        r.incr(key_count)
+        r.set(key, html_content, ex=10)
+        r.expire(key, 10)
+        return html_content
     return wrapper
 
 
-@count_calls
-async def get_page(url: str) -> str:
-    """
-    Fetches the HTML content from a given URL
-    and caches it in Redis with an expiration time.
-
-    Args:
-        url (str): The URL to fetch.
-
-    Returns:
-        str: The HTML content of the page.
-    """
-    # Check if the content is already cached in Redis
-    cached_content = r.get(f"cache:{url}")
-    if cached_content:
-        # If cached, decode and return the content
-        return (await cached_content).decode('utf-8')
-
-    # If not cached, fetch the content using requests
-    response = requests.get(url)
-    html_content = response.text
-
-    # Cache the content in Redis
-    # with a 10-second expiration time
-    r.setex(f"cache:{url}", 10, html_content)
-
-    return html_content
+@url_access_count
+def get_page(url: str) -> str:
+    """obtain the HTML content of a particular"""
+    results = requests.get(url)
+    return results.text
 
 
 if __name__ == "__main__":
-    # Test the function with a slow response URL
-    url = "http://slowwly.robertomurray.co.uk/"
-    print(get_page(url))  # Fetch and cache the page
-    print(get_page(url))  # Retrieve the cached page
-
-
-# #!/usr/bin/env python3
-# """
-# This module provides a function to fetch HTML
-# content from a URL and cache it using Redis.
-# The caching mechanism includes tracking the number of times a URL
-# is accessed and setting an expiration time for the cached content.
-# """
-
-# import redis
-# import requests
-# from functools import wraps
-# from typing import Callable
-
-# # Initialize Redis client connection
-# r = redis.Redis()
-
-# def count_calls(method: Callable) -> Callable:
-#     """
-#     A decorator to count how many times a method is called.
-
-#     Args:
-#         method (Callable): The method to be decorated.
-
-#     Returns:
-#         Callable: The wrapped method that increments the call count.
-#     """
-#     @wraps(method)
-#     def wrapper(url: str) -> str:
-#         """Wrapper function that increments
-#           call count and manages caching."""
-#         # Generate Redis keys for counting and caching
-#         key_count = f"count:{url}"
-#         key_cache = f"cache:{url}"
-
-#         # Increment the count of how many times the URL has been accessed
-#         r.incr(key_count)
-
-#         # Check if the content is already cached in Redis
-#         cached_content = r.get(key_cache)
-#         if cached_content:
-#             # If cached, decode and return the content
-#             return cached_content.decode('utf-8')
-
-#         # If not cached, fetch the content using the original method
-#         html_content = method(url)
-
-#         # Cache the content in Redis with a 10-second expiration time
-#         r.setex(key_cache, 10, html_content)
-
-#         return html_content
-
-#     return wrapper
-
-# @count_calls
-# def get_page(url: str) -> str:
-#     """
-#     Fetches the HTML content from a given URL
-#     and caches it in Redis with an expiration time.
-
-#     Args:
-#         url (str): The URL to fetch.
-
-#     Returns:
-#         str: The HTML content of the page.
-#     """
-#     # Perform an HTTP GET request to retrieve the content of the URL
-#     response = requests.get(url)
-#     return response.text
-
-# if __name__ == "__main__":
-#     # Test the function with a slow response URL
-#     print(get_page('http://slowwly.robertomurray.co.uk/'))
+    get_page('http://slowwly.robertomurray.co.uk')
