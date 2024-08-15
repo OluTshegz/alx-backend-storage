@@ -40,7 +40,7 @@ def count_calls(method: Callable) -> Callable:
 
 
 @count_calls
-def get_page(url: str) -> str:
+async def get_page(url: str) -> str:
     """
     Fetches the HTML content from a given URL
     and caches it in Redis with an expiration time.
@@ -55,7 +55,7 @@ def get_page(url: str) -> str:
     cached_content = r.get(f"cache:{url}")
     if cached_content:
         # If cached, decode and return the content
-        return cached_content.decode('utf-8')
+        return (await cached_content).decode('utf-8')
 
     # If not cached, fetch the content using requests
     response = requests.get(url)
