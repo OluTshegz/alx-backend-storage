@@ -124,7 +124,7 @@ class Cache:
 
     @count_calls
     @call_history
-    def store(self, data: T) -> str:
+    def store(self, data: UnionOfTypes) -> str:
         """
         Store the provided input data in
         Redis using a randomly generated key.
