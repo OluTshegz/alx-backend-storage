@@ -52,9 +52,9 @@ def count_calls(method: Callable) -> Callable:
         # Increment the count for this method in Redis
         self._redis.incr(key)
         # Call the original method and store the result
-        # result = method(self, *args, **kwargs)
+        result = method(self, *args, **kwargs)
         # Return the original method's result
-        return method(self, *args, **kwargs)
+        return result
 
     return wrapper
 
