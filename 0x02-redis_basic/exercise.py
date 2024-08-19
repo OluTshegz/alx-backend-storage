@@ -124,13 +124,14 @@ class Cache:
 
     @count_calls
     @call_history
-    def store(self, data: UnionOfTypes) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store the provided input data in
         Redis using a randomly generated key.
 
         Args:
-            data (T): The data to store in Redis.
+            data (Union[str, bytes, int, float]):
+            The data to store in Redis.
 
         Returns:
             str: The randomly generated key
