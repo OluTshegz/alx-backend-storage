@@ -30,6 +30,9 @@ def count_calls(method: Callable) -> Callable:
         Callable: The wrapped method with
         counting functionality.
     """
+    # Generate the key for counting based
+    # on the method's qualified name
+    key = method.__qualname__
     # Use wraps to preserve the original method's
     # attributes (name, docstring, etc.)
     @wraps(method)
@@ -48,7 +51,7 @@ def count_calls(method: Callable) -> Callable:
         """
         # Generate the key for counting based
         # on the method's qualified name
-        key = method.__qualname__
+        # key = method.__qualname__
         # Increment the count for this method in Redis
         self._redis.incr(key)
         # Call the original method and store the result
