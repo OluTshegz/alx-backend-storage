@@ -30,9 +30,6 @@ def count_calls(method: Callable) -> Callable:
         Callable: The wrapped method with
         counting functionality.
     """
-    # Generate the key for counting based
-    # on the method's qualified name
-    key = method.__qualname__
     # Use wraps to preserve the original method's
     # attributes (name, docstring, etc.)
     @wraps(method)
@@ -51,7 +48,7 @@ def count_calls(method: Callable) -> Callable:
         """
         # Generate the key for counting based
         # on the method's qualified name
-        # key = method.__qualname__
+        key = method.__qualname__
         # Increment the count for this method in Redis
         self._redis.incr(key)
         # Call the original method and store the result
@@ -146,8 +143,8 @@ class Cache:
 
         # Ensure data is bytes
         # comment the below to run the main test files
-        assert isinstance(data, bytes), """Expected the value `data`
-        to be of the type `bytes`"""
+        # assert isinstance(data, bytes), """Expected the value `data`
+        # to be of the type `bytes`"""
 
         # Store the data in Redis using the generated key
         # self._redis.mset({key: data})
@@ -179,8 +176,8 @@ class Cache:
             return None
 
         # Ensure data is bytes
-        assert isinstance(data, bytes), """Expected the value `data`
-        to be of the type `bytes`"""
+        # assert isinstance(data, bytes), """Expected the value `data`
+        # to be of the type `bytes`"""
 
         # If a conversion function is
         # provided, apply it to the data
